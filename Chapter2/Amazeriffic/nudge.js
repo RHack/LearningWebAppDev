@@ -22,11 +22,16 @@ function beginPage(res, title) {
     res.write("<meta charset='utf-8'>\n");
     res.write("<title>"+ title + "</title>\n");
     res.write("<link rel='stylesheet' href='style.css' type='text/css'>\n");
+    res.write("<link rel='stylesheet' href='http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css'>\n");
+    res.write("<script src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js'></script>\n");
+    res.write("<script src='http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js'></script>\n");
     res.write("</head>\n");
     res.write("<body>\n");
+    res.write("<div class='container'>\n");
 }
 
 function endPage(res) {
+    res.write("</div>\n");
     res.write("</body>\n");
     res.write("</html>\n");
     res.end();
@@ -54,6 +59,7 @@ function beginForm(res) {
 function endForm(res) {
     res.write("<input type='submit' value='Push'>\n");
     res.write("</form>\n");
+    res.write("</div>\n");
 }
 
 function capitalize(str) {
@@ -84,16 +90,15 @@ function gitRemote(res) {
         } else {
             var output = stdout.toString(),
                 remotes = output.split(/\n/);
-
+            res.write("<div class='col-sm-4'>\n");
             beginSelect(res, "remote");
-
             remotes.forEach(function(remoteName) {
                 if (remoteName) {
                     writeOption(res, remoteName);
                 }
             });
-
             endSelect(res);
+            res.write("</div>\n");
             endForm(res);
             endPage(res);
         }
@@ -109,10 +114,10 @@ function gitBranch(res) {
         } else {
             var output = stdout.toString(),
                 branches = output.split(/\n/);
-
+            res.write("<div class='row'>\n");
             beginForm(res);
+            res.write("<div class='col-sm-4'>\n");
             beginSelect(res, "branch");
-
             branches.forEach(function(branch) {
                 var branchName = branch.replace(/^\s*\*?\s*/, "").
                                         replace(/\s*$/, "");
@@ -121,8 +126,8 @@ function gitBranch(res) {
                     writeOption(res, branchName);
                 }
             });
-
             endSelect(res);
+            res.write("</div>\n");
             gitRemote(res);
         }
     });
@@ -169,14 +174,16 @@ function frontPage(req, res) {
     res.writeHead(200, {
         "Content-Type": "text/html"
     });
-
+    
     if (req.url === "/style.css") {
         writeCSS(res);
     } else {
         var title = "Nudge - Web Interface for Git Push";
 
         beginPage(res, title);
+        res.write("<div class='jumbotron'>\n");
         writeHeading(res, "h1", title);
+        res.write("</div>\n");
 
         if (req.method === "POST" && req.url === "/push") {
             gitPush(req, res);
